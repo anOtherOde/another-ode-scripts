@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+function init() {
 
   // Show image group matching the active swatch on page load
   function showActiveVariantImages(attempt) {
@@ -202,4 +202,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
