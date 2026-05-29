@@ -1,3 +1,15 @@
+function switchTab(tabName) {
+  const tabs = document.querySelectorAll('.info-modal-tab');
+  const panels = document.querySelectorAll('.info-panel');
+  
+  tabs.forEach(function(tab) {
+    tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+  });
+  panels.forEach(function(panel) {
+    panel.classList.toggle('active', panel.getAttribute('data-panel') === tabName);
+  });
+}
+
 function init() {
 
   // Show image group matching the active swatch on page load
@@ -97,26 +109,11 @@ function init() {
   }, 1200);
 
   // Modal/cart scrollbar fix
-  const openBtnModal = document.querySelector('.product-page-details-link');
-  const closeBtnModal = document.querySelector('.slider-details-close');
   const openBtnCart = document.querySelector('.shopping-bag-wrapper');
   const closeBtnCart = document.querySelector('.cart-close-link');
-  const openBtnEmbossing = document.querySelector('.embossing-trigger');
-  const closeBtnEmbossing = document.querySelector('.embossing-modal-close');
-
-  if (openBtnModal) {
-    openBtnModal.addEventListener('click', function() {
-      document.querySelector('.page-wrapper').style.overflowX = 'hidden';
-      setTimeout(function() { document.querySelector('.page-wrapper').style.overflowX = ''; }, 1000);
-    });
-  }
-
-  if (closeBtnModal) {
-    closeBtnModal.addEventListener('click', function() {
-      document.querySelector('.page-wrapper').style.overflowX = 'hidden';
-      setTimeout(function() { document.querySelector('.page-wrapper').style.overflowX = ''; }, 1000);
-    });
-  }
+  const infoModalClose = document.querySelector('.info-modal-close');
+  const detailsBtn = document.querySelector('.product-page-details-link');
+  const personalisationBtn = document.querySelector('.embossing-trigger');
 
   if (openBtnCart) {
     openBtnCart.addEventListener('click', function() {
@@ -132,32 +129,56 @@ function init() {
     });
   }
 
-  if (openBtnEmbossing) {
-    openBtnEmbossing.addEventListener('click', function() {
+  if (infoModalClose) {
+    infoModalClose.addEventListener('click', function() {
       document.querySelector('.page-wrapper').style.overflowX = 'hidden';
       setTimeout(function() { document.querySelector('.page-wrapper').style.overflowX = ''; }, 1000);
     });
   }
 
-  if (closeBtnEmbossing) {
-    closeBtnEmbossing.addEventListener('click', function() {
+  if (detailsBtn) {
+    detailsBtn.addEventListener('click', function() {
       document.querySelector('.page-wrapper').style.overflowX = 'hidden';
       setTimeout(function() { document.querySelector('.page-wrapper').style.overflowX = ''; }, 1000);
+      switchTab('description');
     });
   }
+
+  if (personalisationBtn) {
+    personalisationBtn.addEventListener('click', function() {
+      document.querySelector('.page-wrapper').style.overflowX = 'hidden';
+      setTimeout(function() { document.querySelector('.page-wrapper').style.overflowX = ''; }, 1000);
+      switchTab('personalisation');
+    });
+  }
+
+  // Tab switching
+  document.querySelectorAll('.info-modal-tab').forEach(function(tab) {
+    tab.addEventListener('click', function(e) {
+      e.preventDefault();
+      switchTab(this.getAttribute('data-tab'));
+    });
+  });
 
   // Embossing trigger visibility
   setTimeout(function() {
     const productContainer = document.querySelectorAll('[sf-product]')[0];
     const embossingTrigger = document.querySelectorAll('.embossing-trigger')[0];
+    const personalisationTab = document.querySelector('[data-tab="personalisation"]');
+    const personalisationPanel = document.querySelector('[data-panel="personalisation"]');
 
-    if (productContainer && embossingTrigger) {
+    if (productContainer) {
       const category = productContainer.getAttribute('data-product-category');
       console.log('Product category:', category);
 
       if (category === 'Bandanas & Headties') {
-        embossingTrigger.classList.add('visible');
-        console.log('Embossing trigger shown');
+        if (embossingTrigger) {
+          embossingTrigger.classList.add('visible');
+          console.log('Embossing trigger shown');
+        }
+      } else {
+        if (personalisationTab) personalisationTab.style.display = 'none';
+        if (personalisationPanel) personalisationPanel.style.display = 'none';
       }
     }
   }, 1200);
@@ -202,87 +223,6 @@ function init() {
     });
   }
 
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
-
-  // Info modal tab switching
-  const infoModal = document.querySelector('.info-modal');
-  const infoModalClose = document.querySelector('.info-modal-close');
-  const tabs = document.querySelectorAll('.info-modal-tab');
-  const panels = document.querySelectorAll('.info-panel');
-
-  function switchTab(tabName) {
-    tabs.forEach(function(tab) {
-      tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
-    });
-    panels.forEach(function(panel) {
-      panel.classList.toggle('active', panel.getAttribute('data-panel') === tabName);
-    });
-  }
-
-  tabs.forEach(function(tab) {
-    tab.addEventListener('click', function(e) {
-      e.preventDefault();
-      switchTab(this.getAttribute('data-tab'));
-    });
-  });
-
-  // Open modal on correct tab based on trigger button clicked
-  const detailsBtn = document.querySelector('.product-page-details-link');
-  const personalisationBtn = document.querySelector('.embossing-trigger');
-
-  if (detailsBtn) {
-    detailsBtn.addEventListener('click', function() {
-      switchTab('description');
-    });
-  }
-
-  if (personalisationBtn) {
-    personalisationBtn.addEventListener('click', function() {
-      switchTab('personalisation');
-    });
-  }
-
-  // Update scrollbar fix for info modal
-  if (infoModalClose) {
-    infoModalClose.addEventListener('click', function() {
-      document.querySelector('.page-wrapper').style.overflowX = 'hidden';
-      setTimeout(function() { document.querySelector('.page-wrapper').style.overflowX = ''; }, 1000);
-    });
-  }
-
-  if (detailsBtn) {
-    detailsBtn.addEventListener('click', function() {
-      document.querySelector('.page-wrapper').style.overflowX = 'hidden';
-      setTimeout(function() { document.querySelector('.page-wrapper').style.overflowX = ''; }, 1000);
-    });
-  }
-
-  if (personalisationBtn) {
-    personalisationBtn.addEventListener('click', function() {
-      document.querySelector('.page-wrapper').style.overflowX = 'hidden';
-      setTimeout(function() { document.querySelector('.page-wrapper').style.overflowX = ''; }, 1000);
-    });
-  }
-
-  // Hide personalisation tab on non-bandana products
-  setTimeout(function() {
-    const productContainer = document.querySelectorAll('[sf-product]')[0];
-    const personalisationTab = document.querySelector('[data-tab="personalisation"]');
-    const personalisationPanel = document.querySelector('[data-panel="personalisation"]');
-
-    if (productContainer && personalisationTab) {
-      const category = productContainer.getAttribute('data-product-category');
-      if (category !== 'Bandanas & Headties') {
-        personalisationTab.style.display = 'none';
-        if (personalisationPanel) personalisationPanel.style.display = 'none';
-      }
-    }
-  }, 1200);
 }
 
 if (document.readyState === 'loading') {
