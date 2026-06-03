@@ -32,13 +32,25 @@ setTimeout(function() {
   const dateEl = document.querySelector('[sf-show-metafield="expected_ship_date"]');
   if (dateEl && dateEl.textContent.trim()) {
     const text = dateEl.textContent.trim();
-    const parts = text.split('/');
-    if (parts.length === 3) {
-      const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                      'July', 'August', 'September', 'October', 'November', 'December'];
-      const day = parseInt(parts[0]);
-      const month = months[parseInt(parts[1]) - 1];
-      const year = parts[2];
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+    let day, month, year;
+
+    if (text.includes('-')) {
+      // yyyy-mm-dd format
+      const parts = text.split('-');
+      day = parseInt(parts[2]);
+      month = months[parseInt(parts[1]) - 1];
+      year = parts[0];
+    } else if (text.includes('/')) {
+      // dd/mm/yyyy format
+      const parts = text.split('/');
+      day = parseInt(parts[0]);
+      month = months[parseInt(parts[1]) - 1];
+      year = parts[2];
+    }
+
+    if (day && month && year) {
       dateEl.textContent = day + ' ' + month + ' ' + year;
     }
   }
