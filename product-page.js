@@ -12,6 +12,21 @@ function switchTab(tabName) {
 
 function init() {
 
+  // Pre-order button text
+setTimeout(function() {
+  const productContainer = document.querySelectorAll('[sf-product]')[0];
+  if (productContainer) {
+    const tag = productContainer.getAttribute('data-product-tag');
+    if (tag === 'pre-order') {
+      const addToCartBtn = document.querySelector('[sf-add-to-cart]');
+      if (addToCartBtn) {
+        const btnText = addToCartBtn.querySelector('div');
+        if (btnText) btnText.textContent = 'Available to Pre-order';
+      }
+    }
+  }
+}, 1200);
+  
   // Format metafield date to European format
 setTimeout(function() {
   const dateEl = document.querySelector('[sf-show-metafield="expected_ship_date"]');
