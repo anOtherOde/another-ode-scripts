@@ -33,7 +33,12 @@ setTimeout(function() {
   if (dateEl && dateEl.textContent.trim()) {
     const parts = dateEl.textContent.trim().split('-');
     if (parts.length === 3) {
-      dateEl.textContent = parts[2] + '/' + parts[1] + '/' + parts[0];
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+      const day = parseInt(parts[2]);
+      const month = months[parseInt(parts[1]) - 1];
+      const year = parts[0];
+      dateEl.textContent = day + ' ' + month + ' ' + year;
     }
   }
 }, 1500);
