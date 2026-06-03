@@ -27,17 +27,18 @@ setTimeout(function() {
   }
 }, 1200);
   
-  // Format metafield date to European format
+  // Format metafield date to long format
 setTimeout(function() {
   const dateEl = document.querySelector('[sf-show-metafield="expected_ship_date"]');
   if (dateEl && dateEl.textContent.trim()) {
-    const parts = dateEl.textContent.trim().split('-');
+    const text = dateEl.textContent.trim();
+    const parts = text.split('/');
     if (parts.length === 3) {
       const months = ['January', 'February', 'March', 'April', 'May', 'June', 
                       'July', 'August', 'September', 'October', 'November', 'December'];
-      const day = parseInt(parts[2]);
+      const day = parseInt(parts[0]);
       const month = months[parseInt(parts[1]) - 1];
-      const year = parts[0];
+      const year = parts[2];
       dateEl.textContent = day + ' ' + month + ' ' + year;
     }
   }
