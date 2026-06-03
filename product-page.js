@@ -12,6 +12,17 @@ function switchTab(tabName) {
 
 function init() {
 
+  // Format metafield date to European format
+setTimeout(function() {
+  const dateEl = document.querySelector('[sf-show-metafield="expected_ship_date"]');
+  if (dateEl && dateEl.textContent.trim()) {
+    const parts = dateEl.textContent.trim().split('-');
+    if (parts.length === 3) {
+      dateEl.textContent = parts[2] + '/' + parts[1] + '/' + parts[0];
+    }
+  }
+}, 1500);
+
   // Show image group matching the active swatch on page load
   function showActiveVariantImages(attempt) {
     attempt = attempt || 1;
