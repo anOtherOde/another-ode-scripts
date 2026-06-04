@@ -86,9 +86,6 @@ setTimeout(function() {
     const wrapper = dateEl.closest('[sf-metafield-wrapper]');
     const text = dateEl.textContent.trim();
 
-    // Skip already formatted dates
-    if (dateEl.dataset.formatted === 'true') return;
-
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 
                     'July', 'August', 'September', 'October', 'November', 'December'];
     let day, month, year;
@@ -110,19 +107,30 @@ setTimeout(function() {
     }
 
     if (day && month && year) {
-      // Valid date found - format and show
       dateEl.textContent = day + ' ' + month + ' ' + year;
-      dateEl.dataset.formatted = 'true';
       if (wrapper) wrapper.style.display = '';
     } else {
-      // No valid date - hide wrapper
       if (wrapper) wrapper.style.display = 'none';
     }
   });
 }
 
+// Run on load
 formatCartDates();
-setInterval(formatCartDates, 500);
+
+// Watch for cart re-renders
+const cartObserver = new MutationObserver(function(mutations) {
+  mutations.forEach(function(mutation) {
+    if (mutation.addedNodes.length > 0) {
+      setTimeout(formatCartDates, 200);
+    }
+  });
+});
+
+const cartContainer = document.querySelector('[sf-cart]');
+if (cartContainer) {
+  cartObserver.observe(cartContainer, { childList: true, subtree: true });
+}
   
 
   // Show image group matching the active swatch on page load
