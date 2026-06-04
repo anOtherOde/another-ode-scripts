@@ -18,8 +18,7 @@ setTimeout(function() {
   const waitlistWrapper = document.querySelector('.waitlist-wrapper');
   const waitlistForm = document.querySelector('.waitlist-form');
   const waitlistTrigger = document.querySelector('.waitlist-trigger');
-  const waitlistSuccess = document.querySelector('.waitlist-success');
-  const productField = document.querySelector('.product-field');
+  const form = document.querySelector('#email-form-2');
   const productTitle = document.querySelector('.product-description-title');
 
   if (addToCartBtn && addToCartBtn.classList.contains('sf-out-of-stock')) {
@@ -27,9 +26,13 @@ setTimeout(function() {
     addToCartBtn.style.display = 'none';
     if (waitlistWrapper) waitlistWrapper.style.display = 'block';
 
-    // Populate hidden product field with product name
-    if (productField && productTitle) {
-      productField.value = productTitle.textContent.trim();
+    // Inject hidden product field into form
+    if (form && productTitle) {
+      const hiddenField = document.createElement('input');
+      hiddenField.type = 'hidden';
+      hiddenField.name = 'Product';
+      hiddenField.value = productTitle.textContent.trim();
+      form.appendChild(hiddenField);
     }
   }
 
