@@ -83,8 +83,9 @@ setTimeout(function() {
   // Date formats for pre-order and cart items
   function formatCartDates() {
   document.querySelectorAll('[sf-show-metafield="expected_ship_date"]').forEach(function(dateEl) {
-    const wrapper = dateEl.closest('[sf-metafield-wrapper]');
     const text = dateEl.textContent.trim();
+    const wrapper = dateEl.closest('[sf-metafield-wrapper]');
+    const isCartItem = !!dateEl.closest('[sf-cart-item]');
 
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 
                     'July', 'August', 'September', 'October', 'November', 'December'];
@@ -107,11 +108,14 @@ setTimeout(function() {
     }
 
     if (day && month && year) {
+      // Valid date — format and show
       dateEl.textContent = day + ' ' + month + ' ' + year;
       if (wrapper) wrapper.style.display = '';
-    } else {
+    } else if (isCartItem) {
+      // No valid date in cart item — hide wrapper
       if (wrapper) wrapper.style.display = 'none';
     }
+    // On product page with no valid date — leave as is, Shopyflow handles it
   });
 }
 
