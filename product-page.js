@@ -80,23 +80,22 @@ setTimeout(function() {
   }
 }, 1200);
   
-  // Format metafield date to long format
-setTimeout(function() {
-  const dateEl = document.querySelector('[sf-show-metafield="expected_ship_date"]');
-  if (dateEl && dateEl.textContent.trim()) {
+  // Format cart item metafield dates
+function formatCartDates() {
+  document.querySelectorAll('[sf-show-metafield="expected_ship_date"]').forEach(function(dateEl) {
     const text = dateEl.textContent.trim();
+    if (!text || text === dateEl.dataset.formatted) return;
+    
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 
                     'July', 'August', 'September', 'October', 'November', 'December'];
     let day, month, year;
 
     if (text.includes('-')) {
-      // yyyy-mm-dd format
       const parts = text.split('-');
       day = parseInt(parts[2]);
       month = months[parseInt(parts[1]) - 1];
       year = parts[0];
     } else if (text.includes('/')) {
-      // dd/mm/yyyy format
       const parts = text.split('/');
       day = parseInt(parts[0]);
       month = months[parseInt(parts[1]) - 1];
@@ -105,9 +104,15 @@ setTimeout(function() {
 
     if (day && month && year) {
       dateEl.textContent = day + ' ' + month + ' ' + year;
+      dateEl.dataset.formatted = dateEl.textContent;
     }
-  }
-}, 1500);
+  });
+}
+
+// Run on load and watch for cart updates
+formatCartDates();
+setInterval(formatCartDates, 1000);
+  
 
   // Show image group matching the active swatch on page load
   function showActiveVariantImages(attempt) {
