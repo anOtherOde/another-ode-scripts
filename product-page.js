@@ -13,7 +13,11 @@ function switchTab(tabName) {
 function init() {
 
   // Waitlist
-setTimeout(function() {
+function initWaitlist(attempt) {
+  attempt = attempt || 1;
+  const maxAttempts = 10;
+  const retryDelay = 300;
+
   const addToCartBtn = document.querySelector('[sf-add-to-cart]');
   const waitlistWrapper = document.querySelector('.waitlist-wrapper');
   const waitlistForm = document.querySelector('.waitlist-form');
@@ -21,31 +25,44 @@ setTimeout(function() {
   const form = document.querySelector('#email-form-2');
   const productTitle = document.querySelector('.product-description-title');
 
-  if (addToCartBtn && addToCartBtn.classList.contains('sf-out-of-stock')) {
-    // Hide Add to Cart, show waitlist
-    addToCartBtn.style.display = 'none';
-    if (waitlistWrapper) waitlistWrapper.style.display = 'block';
+  if (addToCartBtn) {
+    if (addToCartBtn.classList.contains('sf-out-of-stock')) {
+      // Hide Add to Cart, show waitlist
+      addToCartBtn.style.display = 'none';
+      if (waitlistWrapper) waitlistWrapper.style.display = 'block';
 
-    // Inject hidden product field into form
-    if (form && productTitle) {
-      const hiddenField = document.createElement('input');
-      hiddenField.type = 'hidden';
-      hiddenField.name = 'Product';
-      hiddenField.value = productTitle.textContent.trim();
-      form.appendChild(hiddenField);
+      // Inject hidden product field into form
+      if (form && productTitle && !form.querySelector('input[name="Product"]')) {
+        const hiddenField = document.createElement('input');
+        hiddenField.type = 'hidden';
+        hiddenField.name = 'Product';
+        hiddenField.value = productTitle.textContent.trim();
+        form.appendChild(hiddenField);
+      }
+    } else if (attempt < maxAttempts) {
+      // sf-out-of-stock not yet applied, retry
+      setTimeout(function() {
+        initWaitlist(attempt + 1);
+      }, retryDelay);
     }
+  } else if (attempt < maxAttempts) {
+    setTimeout(function() {
+      initWaitlist(attempt + 1);
+    }, retryDelay);
   }
 
   // Show email input when trigger button is clicked
-  if (waitlistTrigger) {
+  if (waitlistTrigger && !waitlistTrigger.dataset.listenerAdded) {
+    waitlistTrigger.dataset.listenerAdded = 'true';
     waitlistTrigger.addEventListener('click', function(e) {
       e.preventDefault();
       if (waitlistForm) waitlistForm.style.display = 'block';
       waitlistTrigger.style.display = 'none';
     });
   }
+}
 
-}, 1200);
+initWaitlist();
   
   
   // Pre-order button text
