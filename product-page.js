@@ -12,6 +12,39 @@ function switchTab(tabName) {
 
 function init() {
 
+  // Waitlist
+setTimeout(function() {
+  const addToCartBtn = document.querySelector('[sf-add-to-cart]');
+  const waitlistWrapper = document.querySelector('.waitlist-wrapper');
+  const waitlistForm = document.querySelector('.waitlist-form');
+  const waitlistTrigger = document.querySelector('.waitlist-trigger');
+  const waitlistSuccess = document.querySelector('.waitlist-success');
+  const productField = document.querySelector('.product-field');
+  const productTitle = document.querySelector('.product-description-title');
+
+  if (addToCartBtn && addToCartBtn.classList.contains('sf-out-of-stock')) {
+    // Hide Add to Cart, show waitlist
+    addToCartBtn.style.display = 'none';
+    if (waitlistWrapper) waitlistWrapper.style.display = 'block';
+
+    // Populate hidden product field with product name
+    if (productField && productTitle) {
+      productField.value = productTitle.textContent.trim();
+    }
+  }
+
+  // Show email input when trigger button is clicked
+  if (waitlistTrigger) {
+    waitlistTrigger.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (waitlistForm) waitlistForm.style.display = 'block';
+      waitlistTrigger.style.display = 'none';
+    });
+  }
+
+}, 1200);
+  
+  
   // Pre-order button text
 setTimeout(function() {
   const productContainer = document.querySelectorAll('[sf-product]')[0];
