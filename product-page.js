@@ -80,12 +80,17 @@ setTimeout(function() {
   }
 }, 1200);
   
-  // Format cart item metafield dates
-function formatCartDates() {
+  function formatCartDates() {
   document.querySelectorAll('[sf-show-metafield="expected_ship_date"]').forEach(function(dateEl) {
     const text = dateEl.textContent.trim();
-    if (!text || text === dateEl.dataset.formatted) return;
+    const wrapper = dateEl.closest('[sf-metafield-wrapper]');
     
+    // Hide wrapper if empty or still showing placeholder
+    if (!text || text === dateEl.dataset.formatted) {
+      if (wrapper) wrapper.style.display = 'none';
+      return;
+    }
+
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 
                     'July', 'August', 'September', 'October', 'November', 'December'];
     let day, month, year;
@@ -105,13 +110,12 @@ function formatCartDates() {
     if (day && month && year) {
       dateEl.textContent = day + ' ' + month + ' ' + year;
       dateEl.dataset.formatted = dateEl.textContent;
+      if (wrapper) wrapper.style.display = 'block';
+    } else {
+      if (wrapper) wrapper.style.display = 'none';
     }
   });
 }
-
-// Run on load and watch for cart updates
-formatCartDates();
-setInterval(formatCartDates, 1000);
   
 
   // Show image group matching the active swatch on page load
