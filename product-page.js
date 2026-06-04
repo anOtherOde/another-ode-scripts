@@ -126,9 +126,9 @@ formatCartDates();
 const cartObserver = new MutationObserver(function(mutations) {
   mutations.forEach(function(mutation) {
     if (mutation.addedNodes.length > 0) {
-      setTimeout(formatCartDates, 500);
-      setTimeout(formatCartDates, 1500);
-      setTimeout(formatCartDates, 3000);
+      setTimeout(formatCartDates, 2000);
+      setTimeout(formatCartDates, 3500);
+      setTimeout(formatCartDates, 5000);
     }
   });
 });
