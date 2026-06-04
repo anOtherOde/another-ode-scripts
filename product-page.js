@@ -22,7 +22,7 @@ function initWaitlist(attempt) {
   const waitlistWrapper = document.querySelector('.waitlist-wrapper');
   const waitlistForm = document.querySelector('.waitlist-form');
   const waitlistTrigger = document.querySelector('.waitlist-trigger');
-  const form = document.querySelector('#email-form-2');
+  const form = document.querySelector('#wf-form-Waitlist');
   const productTitle = document.querySelector('.product-description-title');
 
   if (addToCartBtn) {
