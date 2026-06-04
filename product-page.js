@@ -80,16 +80,14 @@ setTimeout(function() {
   }
 }, 1200);
   
+  // Date formats for pre-order and cart items
   function formatCartDates() {
   document.querySelectorAll('[sf-show-metafield="expected_ship_date"]').forEach(function(dateEl) {
-    const text = dateEl.textContent.trim();
     const wrapper = dateEl.closest('[sf-metafield-wrapper]');
-    
-    // Hide wrapper if empty or still showing placeholder
-    if (!text || text === dateEl.dataset.formatted) {
-      if (wrapper) wrapper.style.display = 'none';
-      return;
-    }
+    const text = dateEl.textContent.trim();
+
+    // Skip already formatted dates
+    if (dateEl.dataset.formatted === 'true') return;
 
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 
                     'July', 'August', 'September', 'October', 'November', 'December'];
@@ -97,25 +95,34 @@ setTimeout(function() {
 
     if (text.includes('-')) {
       const parts = text.split('-');
-      day = parseInt(parts[2]);
-      month = months[parseInt(parts[1]) - 1];
-      year = parts[0];
+      if (parts.length === 3) {
+        day = parseInt(parts[2]);
+        month = months[parseInt(parts[1]) - 1];
+        year = parts[0];
+      }
     } else if (text.includes('/')) {
       const parts = text.split('/');
-      day = parseInt(parts[0]);
-      month = months[parseInt(parts[1]) - 1];
-      year = parts[2];
+      if (parts.length === 3) {
+        day = parseInt(parts[0]);
+        month = months[parseInt(parts[1]) - 1];
+        year = parts[2];
+      }
     }
 
     if (day && month && year) {
+      // Valid date found - format and show
       dateEl.textContent = day + ' ' + month + ' ' + year;
-      dateEl.dataset.formatted = dateEl.textContent;
-      if (wrapper) wrapper.style.display = 'block';
+      dateEl.dataset.formatted = 'true';
+      if (wrapper) wrapper.style.display = '';
     } else {
+      // No valid date - hide wrapper
       if (wrapper) wrapper.style.display = 'none';
     }
   });
 }
+
+formatCartDates();
+setInterval(formatCartDates, 500);
   
 
   // Show image group matching the active swatch on page load
