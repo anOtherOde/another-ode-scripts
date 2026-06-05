@@ -80,23 +80,30 @@ function fetchCartMetafields() {
     const cartItems = document.querySelectorAll('[sf-cart-item]');
     
     lines.forEach(function(line, index) {
-      const metafield = line.node.merchandise.product.metafield;
-      const cartItem = cartItems[index];
-      if (!cartItem) return;
-      
-      const wrapper = cartItem.querySelector('[sf-metafield-wrapper]');
-      const dateEl = cartItem.querySelector('[sf-show-metafield="expected_ship_date"]');
-      
-      if (metafield && metafield.value && dateEl) {
-  const formatted = formatDate(metafield.value);
-  if (formatted) {
-    dateEl.textContent = formatted;
-    if (wrapper) wrapper.style.display = '';
+  const metafield = line.node.merchandise.product.metafield;
+  
+  // Only get cart items that have been populated by Shopyflow (have a title)
+  const populatedCartItems = Array.from(document.querySelectorAll('[sf-cart-item]')).filter(function(item) {
+    const title = item.querySelector('[sf-show-title]');
+    return title && title.textContent.trim() !== '';
+  });
+  
+  const cartItem = populatedCartItems[index];
+  if (!cartItem) return;
+  
+  const wrapper = cartItem.querySelector('[sf-metafield-wrapper]');
+  const dateEl = cartItem.querySelector('[sf-show-metafield="expected_ship_date"]');
+  
+  if (metafield && metafield.value && dateEl) {
+    const formatted = formatDate(metafield.value);
+    if (formatted) {
+      dateEl.textContent = formatted;
+      if (wrapper) wrapper.style.display = '';
+    }
+  } else {
+    if (wrapper) wrapper.style.display = 'none';
   }
-} else {
-  if (wrapper) wrapper.style.display = 'none';
-}
-    });
+});
   })
   .catch(function(err) {
     console.log('Cart metafield fetch error:', err);
