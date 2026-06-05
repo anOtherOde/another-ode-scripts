@@ -77,33 +77,30 @@ function fetchCartMetafields() {
     if (!data.data || !data.data.cart) return;
     
     const lines = data.data.cart.lines.edges;
-    const cartItems = document.querySelectorAll('[sf-cart-item]');
-    
+
+    const populatedCartItems = Array.from(document.querySelectorAll('[sf-cart-item]')).filter(function(item) {
+      const title = item.querySelector('[sf-show-title]');
+      return title && title.textContent.trim() !== '' && title.textContent.trim() !== 'Product Name';
+    });
+
     lines.forEach(function(line, index) {
-  const metafield = line.node.merchandise.product.metafield;
-  
-  // Only get cart items that have been populated by Shopyflow (have a title)
-  const populatedCartItems = Array.from(document.querySelectorAll('[sf-cart-item]')).filter(function(item) {
-  const title = item.querySelector('[sf-show-title]');
-  return title && title.textContent.trim() !== '' && title.textContent.trim() !== 'Product Name';
-});
-  
-  const cartItem = populatedCartItems[index];
-  if (!cartItem) return;
-  
-  const wrapper = cartItem.querySelector('[sf-metafield-wrapper]');
-  const dateEl = cartItem.querySelector('[sf-show-metafield="expected_ship_date"]');
-  
-  if (metafield && metafield.value && dateEl) {
-    const formatted = formatDate(metafield.value);
-    if (formatted) {
-      dateEl.textContent = formatted;
-      if (wrapper) wrapper.style.display = '';
-    }
-  } else {
-    if (wrapper) wrapper.style.display = 'none';
-  }
-});
+      const metafield = line.node.merchandise.product.metafield;
+      const cartItem = populatedCartItems[index];
+      if (!cartItem) return;
+      
+      const wrapper = cartItem.querySelector('[sf-metafield-wrapper]');
+      const dateEl = cartItem.querySelector('[sf-show-metafield="expected_ship_date"]');
+      
+      if (metafield && metafield.value && dateEl) {
+        const formatted = formatDate(metafield.value);
+        if (formatted) {
+          dateEl.textContent = formatted;
+          if (wrapper) wrapper.style.display = '';
+        }
+      } else {
+        if (wrapper) wrapper.style.display = 'none';
+      }
+    });
   })
   .catch(function(err) {
     console.log('Cart metafield fetch error:', err);
@@ -395,17 +392,19 @@ function init() {
 
   initWaitlist();
 
-// Watch cart for changes and fetch metafields
-const cartContainer = document.querySelector('[sf-cart]');
-if (cartContainer) {
-  let fetchTimeout;
-  let fetchTimeout2;
-  new MutationObserver(function() {
-    clearTimeout(fetchTimeout);
-    clearTimeout(fetchTimeout2);
-    fetchTimeout = setTimeout(fetchCartMetafields, 2000);
-    fetchTimeout2 = setTimeout(fetchCartMetafields, 4000);
-  }).observe(cartContainer, { childList: true, subtree: true });
+  // Watch cart for changes and fetch metafields
+  const cartContainer = document.querySelector('[sf-cart]');
+  if (cartContainer) {
+    let fetchTimeout;
+    let fetchTimeout2;
+    new MutationObserver(function() {
+      clearTimeout(fetchTimeout);
+      clearTimeout(fetchTimeout2);
+      fetchTimeout = setTimeout(fetchCartMetafields, 2000);
+      fetchTimeout2 = setTimeout(fetchCartMetafields, 4000);
+    }).observe(cartContainer, { childList: true, subtree: true });
+  }
+
 }
 
 if (document.readyState === 'loading') {
