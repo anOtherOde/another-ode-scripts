@@ -399,12 +399,14 @@ function init() {
 const cartContainer = document.querySelector('[sf-cart]');
 if (cartContainer) {
   let fetchTimeout;
+  let fetchTimeout2;
   new MutationObserver(function() {
     clearTimeout(fetchTimeout);
-    fetchTimeout = setTimeout(fetchCartMetafields, 1000);
+    clearTimeout(fetchTimeout2);
+    fetchTimeout = setTimeout(fetchCartMetafields, 2000);
+    fetchTimeout2 = setTimeout(fetchCartMetafields, 4000);
   }).observe(cartContainer, { childList: true, subtree: true });
 }
-  }
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
