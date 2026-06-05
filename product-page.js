@@ -92,14 +92,14 @@ function fetchCartMetafields() {
       const dateEl = cartItem.querySelector('[sf-show-metafield="expected_ship_date"]');
       
       if (metafield && metafield.value && dateEl) {
-        const formatted = formatDate(metafield.value);
-        if (formatted) {
-          dateEl.textContent = formatted;
-          if (wrapper) wrapper.style.display = '';
-        }
-      } else {
-        if (wrapper) wrapper.style.display = 'none';
-      }
+  const formatted = formatDate(metafield.value);
+  if (formatted) {
+    dateEl.textContent = formatted;
+    if (wrapper) wrapper.classList.add('metafield-visible');
+  }
+} else {
+  if (wrapper) wrapper.classList.remove('metafield-visible');
+}
     });
   })
   .catch(function(err) {
