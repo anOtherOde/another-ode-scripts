@@ -88,14 +88,14 @@ function fetchCartMetafields() {
       const dateEl = cartItem.querySelector('[sf-show-metafield="expected_ship_date"]');
       
       if (metafield && metafield.value && dateEl) {
-        const formatted = formatDate(metafield.value);
-        if (formatted) {
-          dateEl.textContent = formatted;
-          if (wrapper) wrapper.style.display = '';
-        }
-      } else {
-        if (wrapper) wrapper.style.display = 'none';
-      }
+  const formatted = formatDate(metafield.value);
+  if (formatted) {
+    dateEl.textContent = formatted;
+    if (wrapper) wrapper.style.display = '';
+  }
+} else {
+  if (wrapper) wrapper.style.display = 'none';
+}
     });
   })
   .catch(function(err) {
@@ -388,19 +388,12 @@ function init() {
 
   initWaitlist();
 
-  // Watch cart for changes and fetch metafields
-  const cartContainer = document.querySelector('[sf-cart]');
-  if (cartContainer) {
-    new MutationObserver(function() {
-      setTimeout(fetchCartMetafields, 500);
-      setTimeout(fetchCartMetafields, 1500);
-    }).observe(cartContainer, { childList: true, subtree: true });
-  }
-
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
+// Watch cart for changes and fetch metafields
+const cartContainer = document.querySelector('[sf-cart]');
+if (cartContainer) {
+  let fetchTimeout;
+  new MutationObserver(function() {
+    clearTimeout(fetchTimeout);
+    fetchTimeout = setTimeout(fetchCartMetafields, 1000);
+  }).observe(cartContainer, { childList: true, subtree: true });
 }
