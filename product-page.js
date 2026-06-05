@@ -10,78 +10,7 @@ function switchTab(tabName) {
   });
 }
 
-function init() {
-
-  // Waitlist
-function initWaitlist(attempt) {
-  attempt = attempt || 1;
-  const maxAttempts = 10;
-  const retryDelay = 300;
-
-  const addToCartBtn = document.querySelector('[sf-add-to-cart]');
-  const waitlistWrapper = document.querySelector('.waitlist-wrapper');
-  const waitlistForm = document.querySelector('.waitlist-form');
-  const waitlistTrigger = document.querySelector('.waitlist-trigger');
-  const form = document.querySelector('#wf-form-Waitlist');
-  const productTitle = document.querySelector('.product-description-title');
-
-  if (addToCartBtn) {
-    if (addToCartBtn.classList.contains('sf-out-of-stock')) {
-      // Hide Add to Cart, show waitlist
-      addToCartBtn.style.display = 'none';
-      if (waitlistWrapper) waitlistWrapper.style.display = 'block';
-
-      // Inject hidden product field into form
-      if (form && productTitle && !form.querySelector('input[name="Product"]')) {
-        const hiddenField = document.createElement('input');
-        hiddenField.type = 'hidden';
-        hiddenField.name = 'Product';
-        hiddenField.value = productTitle.textContent.trim();
-        form.appendChild(hiddenField);
-      }
-    } else if (attempt < maxAttempts) {
-      // sf-out-of-stock not yet applied, retry
-      setTimeout(function() {
-        initWaitlist(attempt + 1);
-      }, retryDelay);
-    }
-  } else if (attempt < maxAttempts) {
-    setTimeout(function() {
-      initWaitlist(attempt + 1);
-    }, retryDelay);
-  }
-
-  // Show email input when trigger button is clicked
-  if (waitlistTrigger && !waitlistTrigger.dataset.listenerAdded) {
-    waitlistTrigger.dataset.listenerAdded = 'true';
-    waitlistTrigger.addEventListener('click', function(e) {
-      e.preventDefault();
-      if (waitlistForm) waitlistForm.style.display = 'block';
-      waitlistTrigger.style.display = 'none';
-    });
-  }
-}
-
-initWaitlist();
-  
-  
-  // Pre-order button text
-setTimeout(function() {
-  const productContainer = document.querySelectorAll('[sf-product]')[0];
-  if (productContainer) {
-    const tag = productContainer.getAttribute('data-product-tag');
-    if (tag === 'pre-order') {
-      const addToCartBtn = document.querySelector('[sf-add-to-cart]');
-      if (addToCartBtn) {
-        const btnText = addToCartBtn.querySelector('div');
-        if (btnText) btnText.textContent = 'Available to Pre-order';
-      }
-    }
-  }
-}, 1200);
-  
-  // Date formats for pre-order and cart items
-  function formatDate(text) {
+function formatDate(text) {
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 
                   'July', 'August', 'September', 'October', 'November', 'December'];
   let day, month, year;
@@ -106,58 +35,75 @@ setTimeout(function() {
   return null;
 }
 
-function watchMetafieldElement(dateEl) {
-  const isCartItem = !!dateEl.closest('[sf-cart-item]');
-  const wrapper = dateEl.closest('[sf-metafield-wrapper]');
-
-  // Check current value
-  const formatted = formatDate(dateEl.textContent.trim());
-  if (formatted) {
-    dateEl.textContent = formatted;
-    if (wrapper) wrapper.style.display = '';
-  } else if (isCartItem && wrapper) {
-    wrapper.style.display = 'none';
-  }
-
-  // Watch for Shopyflow updating the text
-  const observer = new MutationObserver(function() {
-    const text = dateEl.textContent.trim();
-    const formatted = formatDate(text);
-    if (formatted && text !== formatted) {
-      observer.disconnect();
-      dateEl.textContent = formatted;
-      if (wrapper) wrapper.style.display = '';
-      // Reconnect to watch for future updates
-      observer.observe(dateEl, { childList: true, subtree: true, characterData: true });
-    } else if (!formatted && isCartItem && wrapper) {
-      wrapper.style.display = 'none';
-    }
-  });
-
-  observer.observe(dateEl, { childList: true, subtree: true, characterData: true });
+function getCartId() {
+  return localStorage.getItem('_sf-cart-id');
 }
 
-// Watch cart for new items being added
-const cartObserver = new MutationObserver(function() {
-  document.querySelectorAll('[sf-show-metafield="expected_ship_date"]').forEach(function(dateEl) {
-    if (!dateEl.dataset.watching) {
-      dateEl.dataset.watching = 'true';
-      watchMetafieldElement(dateEl);
-    }
-  });
-});
+function fetchCartMetafields() {
+  const cartId = getCartId();
+  if (!cartId) return;
 
-const cartContainer = document.querySelector('[sf-cart]');
-if (cartContainer) {
-  cartObserver.observe(cartContainer, { childList: true, subtree: true });
+  fetch('https://knmwuk-mi.myshopify.com/api/2024-01/graphql.json', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Shopify-Storefront-Access-Token': '74907398b8e879f18fc5849bffef16f8'
+    },
+    body: JSON.stringify({
+      query: `{
+        cart(id: "${cartId}") {
+          lines(first: 10) {
+            edges {
+              node {
+                id
+                merchandise {
+                  ... on ProductVariant {
+                    product {
+                      metafield(namespace: "custom", key: "expected_ship_date") {
+                        value
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }`
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (!data.data || !data.data.cart) return;
+    
+    const lines = data.data.cart.lines.edges;
+    const cartItems = document.querySelectorAll('[sf-cart-item]');
+    
+    lines.forEach(function(line, index) {
+      const metafield = line.node.merchandise.product.metafield;
+      const cartItem = cartItems[index];
+      if (!cartItem) return;
+      
+      const wrapper = cartItem.querySelector('[sf-metafield-wrapper]');
+      const dateEl = cartItem.querySelector('[sf-show-metafield="expected_ship_date"]');
+      
+      if (metafield && metafield.value && dateEl) {
+        const formatted = formatDate(metafield.value);
+        if (formatted) {
+          dateEl.textContent = formatted;
+          if (wrapper) wrapper.style.display = '';
+        }
+      } else {
+        if (wrapper) wrapper.style.display = 'none';
+      }
+    });
+  })
+  .catch(function(err) {
+    console.log('Cart metafield fetch error:', err);
+  });
 }
 
-// Watch existing elements on page load
-document.querySelectorAll('[sf-show-metafield="expected_ship_date"]').forEach(function(dateEl) {
-  dateEl.dataset.watching = 'true';
-  watchMetafieldElement(dateEl);
-});
-  
+function init() {
 
   // Show image group matching the active swatch on page load
   function showActiveVariantImages(attempt) {
@@ -186,6 +132,15 @@ document.querySelectorAll('[sf-show-metafield="expected_ship_date"]').forEach(fu
   }
 
   showActiveVariantImages();
+
+  // Format product page date
+  setTimeout(function() {
+    const dateEl = document.querySelector('[sf-show-metafield="expected_ship_date"]:not([sf-cart-item] *)');
+    if (dateEl && dateEl.textContent.trim()) {
+      const formatted = formatDate(dateEl.textContent.trim());
+      if (formatted) dateEl.textContent = formatted;
+    }
+  }, 1500);
 
   // Gallery lightbox
   setTimeout(function() {
@@ -330,6 +285,21 @@ document.querySelectorAll('[sf-show-metafield="expected_ship_date"]').forEach(fu
     }
   }, 1200);
 
+  // Pre-order button text
+  setTimeout(function() {
+    const productContainer = document.querySelectorAll('[sf-product]')[0];
+    if (productContainer) {
+      const tag = productContainer.getAttribute('data-product-tag');
+      if (tag === 'pre-order') {
+        const addToCartBtn = document.querySelector('[sf-add-to-cart]');
+        if (addToCartBtn) {
+          const btnText = addToCartBtn.querySelector('div');
+          if (btnText) btnText.textContent = 'Available to Pre-order';
+        }
+      }
+    }
+  }, 1200);
+
   // Sync embossing modal values to hidden inputs
   document.querySelectorAll('.embossing-input, .embossing-font-select, .embossing-colour-select').forEach(function(field) {
     field.addEventListener('change', function() {
@@ -368,6 +338,63 @@ document.querySelectorAll('[sf-show-metafield="expected_ship_date"]').forEach(fu
         if (hiddenColour) hiddenColour.value = '';
       }, 2000);
     });
+  }
+
+  // Waitlist
+  function initWaitlist(attempt) {
+    attempt = attempt || 1;
+    const maxAttempts = 10;
+    const retryDelay = 300;
+
+    const addToCartBtn = document.querySelector('[sf-add-to-cart]');
+    const waitlistWrapper = document.querySelector('.waitlist-wrapper');
+    const waitlistForm = document.querySelector('.waitlist-form');
+    const waitlistTrigger = document.querySelector('.waitlist-trigger');
+    const form = document.querySelector('#wf-form-Waitlist');
+    const productTitle = document.querySelector('.product-description-title');
+
+    if (addToCartBtn) {
+      if (addToCartBtn.classList.contains('sf-out-of-stock')) {
+        addToCartBtn.style.display = 'none';
+        if (waitlistWrapper) waitlistWrapper.style.display = 'block';
+
+        if (form && productTitle && !form.querySelector('input[name="Product"]')) {
+          const hiddenField = document.createElement('input');
+          hiddenField.type = 'hidden';
+          hiddenField.name = 'Product';
+          hiddenField.value = productTitle.textContent.trim();
+          form.appendChild(hiddenField);
+        }
+      } else if (attempt < maxAttempts) {
+        setTimeout(function() {
+          initWaitlist(attempt + 1);
+        }, retryDelay);
+      }
+    } else if (attempt < maxAttempts) {
+      setTimeout(function() {
+        initWaitlist(attempt + 1);
+      }, retryDelay);
+    }
+
+    if (waitlistTrigger && !waitlistTrigger.dataset.listenerAdded) {
+      waitlistTrigger.dataset.listenerAdded = 'true';
+      waitlistTrigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (waitlistForm) waitlistForm.style.display = 'block';
+        waitlistTrigger.style.display = 'none';
+      });
+    }
+  }
+
+  initWaitlist();
+
+  // Watch cart for changes and fetch metafields
+  const cartContainer = document.querySelector('[sf-cart]');
+  if (cartContainer) {
+    new MutationObserver(function() {
+      setTimeout(fetchCartMetafields, 500);
+      setTimeout(fetchCartMetafields, 1500);
+    }).observe(cartContainer, { childList: true, subtree: true });
   }
 
 }
