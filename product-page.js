@@ -84,9 +84,9 @@ function fetchCartMetafields() {
   
   // Only get cart items that have been populated by Shopyflow (have a title)
   const populatedCartItems = Array.from(document.querySelectorAll('[sf-cart-item]')).filter(function(item) {
-    const title = item.querySelector('[sf-show-title]');
-    return title && title.textContent.trim() !== '';
-  });
+  const title = item.querySelector('[sf-show-title]');
+  return title && title.textContent.trim() !== '' && title.textContent.trim() !== 'Product Name';
+});
   
   const cartItem = populatedCartItems[index];
   if (!cartItem) return;
