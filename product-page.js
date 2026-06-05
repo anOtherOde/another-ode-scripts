@@ -81,54 +81,68 @@ setTimeout(function() {
 }, 1200);
   
   // Date formats for pre-order and cart items
-  function formatCartDates() {
-  document.querySelectorAll('[sf-show-metafield="expected_ship_date"]').forEach(function(dateEl) {
-    const text = dateEl.textContent.trim();
-    const wrapper = dateEl.closest('[sf-metafield-wrapper]');
-    const isCartItem = !!dateEl.closest('[sf-cart-item]');
+  function formatDate(text) {
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                  'July', 'August', 'September', 'October', 'November', 'December'];
+  let day, month, year;
 
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                    'July', 'August', 'September', 'October', 'November', 'December'];
-    let day, month, year;
-
-    if (text.includes('-')) {
-      const parts = text.split('-');
-      if (parts.length === 3) {
-        day = parseInt(parts[2]);
-        month = months[parseInt(parts[1]) - 1];
-        year = parts[0];
-      }
-    } else if (text.includes('/')) {
-      const parts = text.split('/');
-      if (parts.length === 3) {
-        day = parseInt(parts[0]);
-        month = months[parseInt(parts[1]) - 1];
-        year = parts[2];
-      }
+  if (text.includes('-')) {
+    const parts = text.split('-');
+    if (parts.length === 3) {
+      day = parseInt(parts[2]);
+      month = months[parseInt(parts[1]) - 1];
+      year = parts[0];
     }
-
-    if (day && month && year) {
-      // Valid date — format and show
-      dateEl.textContent = day + ' ' + month + ' ' + year;
-      if (wrapper) wrapper.style.display = '';
-    } else if (isCartItem) {
-      // No valid date in cart item — hide wrapper
-      if (wrapper) wrapper.style.display = 'none';
+  } else if (text.includes('/')) {
+    const parts = text.split('/');
+    if (parts.length === 3) {
+      day = parseInt(parts[0]);
+      month = months[parseInt(parts[1]) - 1];
+      year = parts[2];
     }
-    // On product page with no valid date — leave as is, Shopyflow handles it
-  });
+  }
+
+  if (day && month && year) return day + ' ' + month + ' ' + year;
+  return null;
 }
 
-// Run on load
-formatCartDates();
+function watchMetafieldElement(dateEl) {
+  const isCartItem = !!dateEl.closest('[sf-cart-item]');
+  const wrapper = dateEl.closest('[sf-metafield-wrapper]');
 
-// Watch for cart re-renders
-const cartObserver = new MutationObserver(function(mutations) {
-  mutations.forEach(function(mutation) {
-    if (mutation.addedNodes.length > 0) {
-      setTimeout(formatCartDates, 2000);
-      setTimeout(formatCartDates, 3500);
-      setTimeout(formatCartDates, 5000);
+  // Check current value
+  const formatted = formatDate(dateEl.textContent.trim());
+  if (formatted) {
+    dateEl.textContent = formatted;
+    if (wrapper) wrapper.style.display = '';
+  } else if (isCartItem && wrapper) {
+    wrapper.style.display = 'none';
+  }
+
+  // Watch for Shopyflow updating the text
+  const observer = new MutationObserver(function() {
+    const text = dateEl.textContent.trim();
+    const formatted = formatDate(text);
+    if (formatted && text !== formatted) {
+      observer.disconnect();
+      dateEl.textContent = formatted;
+      if (wrapper) wrapper.style.display = '';
+      // Reconnect to watch for future updates
+      observer.observe(dateEl, { childList: true, subtree: true, characterData: true });
+    } else if (!formatted && isCartItem && wrapper) {
+      wrapper.style.display = 'none';
+    }
+  });
+
+  observer.observe(dateEl, { childList: true, subtree: true, characterData: true });
+}
+
+// Watch cart for new items being added
+const cartObserver = new MutationObserver(function() {
+  document.querySelectorAll('[sf-show-metafield="expected_ship_date"]').forEach(function(dateEl) {
+    if (!dateEl.dataset.watching) {
+      dateEl.dataset.watching = 'true';
+      watchMetafieldElement(dateEl);
     }
   });
 });
@@ -137,6 +151,12 @@ const cartContainer = document.querySelector('[sf-cart]');
 if (cartContainer) {
   cartObserver.observe(cartContainer, { childList: true, subtree: true });
 }
+
+// Watch existing elements on page load
+document.querySelectorAll('[sf-show-metafield="expected_ship_date"]').forEach(function(dateEl) {
+  dateEl.dataset.watching = 'true';
+  watchMetafieldElement(dateEl);
+});
   
 
   // Show image group matching the active swatch on page load
