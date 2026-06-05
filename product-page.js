@@ -397,3 +397,10 @@ if (cartContainer) {
     fetchTimeout = setTimeout(fetchCartMetafields, 1000);
   }).observe(cartContainer, { childList: true, subtree: true });
 }
+  }
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
